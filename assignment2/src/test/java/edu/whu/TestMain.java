@@ -4,6 +4,7 @@ import edu.whu.Main;
 import org.junit.Assert;
 import org.junit.Test;
 
+// 测试类
 public class TestMain {
     @Test
     public void testCreate() throws Exception {
