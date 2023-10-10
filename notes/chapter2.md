@@ -18,6 +18,8 @@ try(FileReader fr = new FileReader("test.txt")) {
 } 
 ```
 
+**异常处理相当重要，异常会经常出现，根据代码清晰的逻辑仔细分析可能出现的异常，对其进行合适的处理。**
+
 ## 泛型
 
 ### 注意
@@ -87,3 +89,20 @@ Maven用于自动化构建Java项目。它定义了标准的项目结构和生�
 使用断言来验证代码的行为和结果。JUnit等测试框架提供了各种断言方法，例如`assertEquals`、`assertTrue`、`assertNull`等，用于检查预期结果是否与实际结果一致。
 
 永远不要编写依赖于其他测试用例的测试，应该能够在任何时间、任何顺序运行任何测试。
+
+## 补充
+
+扁平化代码是更优秀的，要减少`if`嵌套语句，可以采用先处理非法条件的办法，如下示例。
+
+```java
+    private static void invokeInitMethod(Class clazz,Object obj) throws BootstrapException {
+        for (Method method : clazz.getDeclaredMethods()) {
+            if (!method.isAnnotationPresent(InitMethod.class)) {continue;}
+            if (method.getParameterCount() > 0) {
+                throw new BootstrapException(BootstrapException.ErrorType.INITMETHOD_ERROR,"带参数的方法不允许标注@InitMethod");
+            }
+            invokeMethod(Modifier.isStatic(method.getModifiers()) ?clazz:obj, method);
+        }
+    }
+```
+
