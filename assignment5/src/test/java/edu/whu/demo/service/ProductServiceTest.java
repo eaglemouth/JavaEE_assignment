@@ -1,7 +1,12 @@
 package edu.whu.demo.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import edu.whu.demo.dao.ProductDao;
+import edu.whu.demo.dao.SupplierDao;
 import edu.whu.demo.domain.Product;
-import edu.whu.demo.domain.Product_supplier;
+import edu.whu.demo.domain.ProductDTO;
+import edu.whu.demo.domain.Supplier;
+import edu.whu.demo.exception.ProductAdminException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -9,7 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -21,7 +28,13 @@ public class ProductServiceTest {
     private IProductService productService;
 
     @Autowired
-    private IProduct_supplierService productSupplierService;
+    private ISupplierService supplierService;
+
+    @Autowired
+    ProductDao productDao;
+
+    @Autowired
+    SupplierDao supplierDao;
 
 
     @Test
@@ -33,6 +46,24 @@ public class ProductServiceTest {
     }
 
     @Test
+    public void testFindProduct(){
+        Map<String,Object> condition=new HashMap<>();
+        IPage<ProductDTO> result = productService.findProduct(condition, 0, 3);
+        assertEquals(3,result.getRecords().size());
+
+        //添加动态查询条件
+        condition.put("name","Product");
+        condition.put("price",new BigDecimal(288.00));
+        result = productService.findProduct(condition, 0,3);
+        assertEquals(2,result.getRecords().size());
+
+        //使用跨表属性查询(supplierName在supplier表中)
+        condition.put("supplierName","Supplier Y");
+        result = productService.findProduct(condition, 0,3);
+        assertEquals(2,result.getTotal());
+    }
+
+    @Test
     public void testAdd(){
         Product product = new Product();
         product.setName("pencil");
@@ -41,6 +72,28 @@ public class ProductServiceTest {
 
         boolean isSuccess = productService.save(product);
         assertNotNull(isSuccess);
+    }
+
+    @Test
+    public void testAddProduct() throws ProductAdminException {
+        Supplier supplier = new Supplier();
+        supplier.setName("A");
+        supplierDao.insert(supplier);
+
+        ProductDTO productDTO = new ProductDTO();
+        productDTO.setName("D");
+        productDTO.setPrice(new BigDecimal(5.66));
+        productDTO.getSupplierList().add(supplier);
+        Product product = productService.addProduct(productDTO);
+
+        assertNotNull(product);
+        int id = product.getId();
+        Product product1 = productDao.selectById(id);
+        assertNotNull(product1);
+
+        productService.deleteProduct(id);
+        assertNull(productDao.selectById(id));
+
     }
 
     @Test
@@ -58,18 +111,28 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void testDelete(){
-        int productID = 2;
-        productSupplierService.removeById(productID);
-        // 删除产品
-        boolean isSuccess = productService.removeById(productID);
+    public void testUpdateProduct() throws ProductAdminException {
+        Supplier supplier=new Supplier();
+        supplier.setName("C公司");
+        supplierDao.insert(supplier);
+        Product product=new Product();
+        product.setName("IPhone 18");
+        product.setPrice(new BigDecimal(3400));
+        Product product2 = productService.addProduct(product);
 
-        // 验证删除是否成功
-        assertTrue(isSuccess);
+        //使用非法的id修改
+        assertThrows(ProductAdminException.class, () -> {
+            product2.setName("Xiaomi 3000");
+            productService.updateProduct(-1,product);
+        });
 
-        // 再次查询产品，应该为空
-        Product deletedProduct = productService.getById(productID);
-        assertNull(deletedProduct);
+        //修改产品名称，去掉商品的供应商
+        product2.setName("Xiaomi 3000");
+        productService.updateProduct(product.getId(),product);
+        //验证结果
+        Product product3 = productDao.selectById(product.getId());
+        assertNotNull(product3);
+        assertEquals("Xiaomi 3000",product3.getName());
     }
 
 }
