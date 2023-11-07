@@ -1,0 +1,14 @@
+
+d
+java:S3824"NReplace this "Map.get()" and condition with a call to "Map.computeIfAbsent()".(¸†ÆŸ
+Y
+java:S1128"7Remove this unused import 'org.aspectj.lang.JoinPoint'.(¾Öùúÿÿÿÿ8ıòØ¦Å0
+c
+java:S1128"GRemove this unused import 'org.aspectj.lang.annotation.AfterReturning'.(Ún8ıòØ¦Å0
+`
+java:S1128	"CRemove this unused import 'org.springframework.stereotype.Service'.(¼º¡Ú8¶úº¦Å0
+u
+java:S1128
+"SRemove this unused import 'org.springframework.web.bind.annotation.RestController'.(±íş¡şÿÿÿÿ8Ô†º¦Å0
+j
+java:S1128"HRemove this unused import 'org.springframework.web.client.RestTemplate'.(Îö¼Şûÿÿÿÿ8Ô†º¦Å0
